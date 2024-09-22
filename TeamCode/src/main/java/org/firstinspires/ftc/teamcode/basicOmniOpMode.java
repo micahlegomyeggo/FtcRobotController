@@ -46,7 +46,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             frontLeft.setPower(-frontLeftPower);
             backLeft.setPower(-backLeftPower);
-            frontRight.setPower(frontRightPower);
+            frontRight.setPower(-frontRightPower);
             backRight.setPower(-backRightPower);
 
             if (gamepad1.a) {
