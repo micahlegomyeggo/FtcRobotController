@@ -1,9 +1,22 @@
 package org.firstinspires.ftc.teamcode.auto;
 
-public class hanging {
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+@Autonomous
+public class hanging extends LinearOpMode {
 
     //this is preliminary code for a two arm auto
 
+    public void runOpMode() {
+
+        while (opModeIsActive()) {
+
+
+
+        }
+
+    }
     //setup
 
     //main loop

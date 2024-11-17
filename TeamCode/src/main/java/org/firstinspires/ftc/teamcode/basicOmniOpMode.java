@@ -40,8 +40,8 @@ public class basicOmniOpMode extends LinearOpMode {
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
-            double frontRightPower = (y - x - rx) / denominator;
-            double backRightPower = (y + x - rx) / denominator;
+            double frontRightPower = (y + x - rx) / denominator;
+            double backRightPower = (y - x - rx) / denominator;
 
             frontLeft.setPower(frontLeftPower);
             backLeft.setPower(backLeftPower);
@@ -50,7 +50,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             if (gamepad2.a) {
 
-                armRotation.setTargetPosition(10);
+                armRotation.setTargetPosition(-10);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
                     armRotation.setPower(0.08);
@@ -70,7 +70,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             if (gamepad2.b) {
 
-                armRotation.setTargetPosition(100);
+                armRotation.setTargetPosition(-100);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
                     armRotation.setPower(0.08);
@@ -89,7 +89,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             if (gamepad2.y){
 
-                armRotation.setTargetPosition(200);
+                armRotation.setTargetPosition(-200);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
                     armRotation.setPower(0.08);
@@ -108,7 +108,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             if (gamepad2.x){
 
-                armRotation.setTargetPosition(600);
+                armRotation.setTargetPosition(-600);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
                     armRotation.setPower(0.08);

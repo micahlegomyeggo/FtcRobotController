@@ -1,31 +1,46 @@
 package org.firstinspires.ftc.teamcode.auto;
 
-public class fishing {
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+@Autonomous
+public class fishing extends LinearOpMode{
 
     //this program is preliminary code for a two arm auto
 
-    //setup (camera too)
+    public void runOpMode() {
 
-    //camera looks for clumps of blue or red samples for highest chance of getting one first try
-
-        //if biggest clump is on the other half go to next biggest clump
-
-    //main loop
+        //setup (camera too)
 
         //camera looks for clumps of blue or red samples for highest chance of getting one first try
 
-        //extend arm once sample has been removed
+        //if biggest clump is on the other half go to next biggest clump
 
-        //color sensor looks for blue or red sample below grabber
+        waitForStart();
 
-        //if one isn't directly below keep looping (while)
+        while (opModeIsActive()) {
 
-        //grab sample once confirmed and robot does not have another
+            //main loop
 
-        //return arm
+            //camera looks for clumps of blue or red samples for highest chance of getting one first try
 
-        //notify hanging
+            //extend arm once sample has been removed
 
-        //immediately start looking for another sample
+            //color sensor looks for blue or red sample below grabber
+
+            //if one isn't directly below keep looping (while)
+
+            //grab sample once confirmed and robot does not have another
+
+            //return arm
+
+            //notify hanging
+
+            //immediately start looking for another sample
+
+        }
+
+    }
 
 }
