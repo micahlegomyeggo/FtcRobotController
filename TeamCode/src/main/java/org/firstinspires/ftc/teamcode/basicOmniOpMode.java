@@ -4,7 +4,13 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp
 public class basicOmniOpMode extends LinearOpMode {
@@ -18,7 +24,14 @@ public class basicOmniOpMode extends LinearOpMode {
         DcMotor armRotation = hardwareMap.get(DcMotorEx.class, "armRotation");
         DcMotor armExtend = hardwareMap.get(DcMotorEx.class, "armExtend");
         Servo wrist = hardwareMap.get(Servo.class, "wrist");
-        Servo intake = hardwareMap.get(Servo.class, "intake");
+        Servo claw = hardwareMap.get(Servo.class, "claw");
+        Servo fishingArm = hardwareMap.get(Servo.class, "fishingArm");
+
+        NormalizedColorSensor colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
+
+        if (colorSensor instanceof SwitchableLight) {
+            ((SwitchableLight)colorSensor).enableLight(true);
+        }
 
         waitForStart();
 
@@ -40,8 +53,8 @@ public class basicOmniOpMode extends LinearOpMode {
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
-            double frontRightPower = (y + x - rx) / denominator;
-            double backRightPower = (y - x - rx) / denominator;
+            double frontRightPower = (y - x - rx) / denominator;
+            double backRightPower = (y + x - rx) / denominator;
 
             frontLeft.setPower(frontLeftPower);
             backLeft.setPower(backLeftPower);
@@ -53,14 +66,14 @@ public class basicOmniOpMode extends LinearOpMode {
                 armRotation.setTargetPosition(-10);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
-                    armRotation.setPower(0.08);
-                    wrist.setPosition(1);
+                    armRotation.setPower(0.25);
+                    //wrist.setPosition(1);
                     if (armRotation.getCurrentPosition() >= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
                 } else if (armRotation.getTargetPosition() < armRotation.getCurrentPosition()) {
-                    armRotation.setPower(-0.08);
-                    wrist.setPosition(1);
+                    armRotation.setPower(-0.25);
+                    //wrist.setPosition(1);
                     if (armRotation.getCurrentPosition() <= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
@@ -73,14 +86,14 @@ public class basicOmniOpMode extends LinearOpMode {
                 armRotation.setTargetPosition(-100);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
-                    armRotation.setPower(0.08);
-                    wrist.setPosition(0.9);
+                    armRotation.setPower(0.25);
+                    //wrist.setPosition(0.9);
                     if (armRotation.getCurrentPosition() >= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
                 } else if (armRotation.getTargetPosition() < armRotation.getCurrentPosition()) {
-                    armRotation.setPower(-0.08);
-                    wrist.setPosition(0.9);
+                    armRotation.setPower(-0.25);
+                    //wrist.setPosition(0.9);
                     if (armRotation.getCurrentPosition() <= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
@@ -92,14 +105,14 @@ public class basicOmniOpMode extends LinearOpMode {
                 armRotation.setTargetPosition(-200);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
-                    armRotation.setPower(0.08);
-                    wrist.setPosition(0.8);
+                    armRotation.setPower(0.25);
+                    //wrist.setPosition(0.8);
                     if (armRotation.getCurrentPosition() >= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
                 } else if (armRotation.getTargetPosition() < armRotation.getCurrentPosition()) {
-                    armRotation.setPower(-0.08);
-                    wrist.setPosition(0.8);
+                    armRotation.setPower(-0.25);
+                    //wrist.setPosition(0.8);
                     if (armRotation.getCurrentPosition() <= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
@@ -111,14 +124,14 @@ public class basicOmniOpMode extends LinearOpMode {
                 armRotation.setTargetPosition(-600);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
-                    armRotation.setPower(0.08);
-                    wrist.setPosition(0.2);
+                    armRotation.setPower(0.25);
+                    //wrist.setPosition(0.2);
                     if (armRotation.getCurrentPosition() >= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
                 } else if (armRotation.getTargetPosition() < armRotation.getCurrentPosition()) {
-                    armRotation.setPower(-0.08);
-                    wrist.setPosition(0.2);
+                    armRotation.setPower(-0.25);
+                    //wrist.setPosition(0.2);
                     if (armRotation.getCurrentPosition() <= armRotation.getTargetPosition()) {
                         armRotation.setPower(0);
                     }
@@ -126,26 +139,49 @@ public class basicOmniOpMode extends LinearOpMode {
             }
 
             if (gamepad2.right_trigger > 0) {
-                wrist.setPosition(0.7);
+                claw.setPosition(0.25);
             }
 
             if (gamepad2.left_trigger > 0 ) {
-                wrist.setPosition(0.9);
+                claw.setPosition(0);
+            }
+
+            if (gamepad2.dpad_down) {
+                wrist.setPosition(1);
+            }
+            if (gamepad2.dpad_up) {
+                wrist.setPosition(0.75);
             }
 
             armExtend.setPower(-gamepad2.left_stick_y);
 
-            if (gamepad2.right_stick_y > 0.1) {
-                intake.setPosition(1);
-            } else if (gamepad2.right_stick_y < -0.1) {
-                intake.setPosition(0);
+            if (gamepad1.left_trigger > 0.1) {
+                fishingArm.setPosition(1);
+            } else if (gamepad1.right_trigger > 0.1) {
+                fishingArm.setPosition(0);
             } else {
-                intake.setPosition(0.5);
+                fishingArm.setPosition(0.5);
             }
 
-            telemetry.addData("Arm angle:", armRotation.getCurrentPosition());
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+
+            telemetry.addData("Arm angle", armRotation.getCurrentPosition());
             telemetry.addData("Arm Extension", -armExtend.getCurrentPosition());
-            telemetry.addData("Wrist Angle", wrist.getPosition());
+            //telemetry.addData("Wrist Angle", wrist.getPosition());
+
+            telemetry.addLine()
+                    .addData("Red", "%.3f", colors.red)
+                    .addData("Green", "%.3f", colors.green)
+                    .addData("Blue", "%.3f", colors.blue);
+            telemetry.addData("Alpha", "%.3f", colors.alpha);
+
+            if (colorSensor instanceof DistanceSensor) {
+                telemetry.addData("Distance (cm)", "%.3f", ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM));
+            }
+
+            if (colors.blue > colors.red && colors.blue > colors.green) {
+                telemetry.addLine("Blue Found");
+            }
 
             telemetry.update();
 
