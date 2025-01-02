@@ -26,6 +26,7 @@ public class basicOmniOpMode extends LinearOpMode {
         Servo wrist = hardwareMap.get(Servo.class, "wrist");
         Servo claw = hardwareMap.get(Servo.class, "claw");
         Servo fishingArm = hardwareMap.get(Servo.class, "fishingArm");
+        Servo rotation = hardwareMap.get(Servo.class, "rotation");
 
         NormalizedColorSensor colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
 
@@ -139,11 +140,11 @@ public class basicOmniOpMode extends LinearOpMode {
             }
 
             if (gamepad2.right_trigger > 0) {
-                claw.setPosition(0.25);
+                claw.setPosition(0.75);
             }
 
             if (gamepad2.left_trigger > 0 ) {
-                claw.setPosition(0);
+                claw.setPosition(1);
             }
 
             if (gamepad2.dpad_down) {
@@ -152,6 +153,12 @@ public class basicOmniOpMode extends LinearOpMode {
             if (gamepad2.dpad_up) {
                 wrist.setPosition(0.35);
             }
+//            if (gamepad2.dpad_left) {
+//                rotation.setPosition(0);
+//            }
+//            if (gamepad2.dpad_right) {
+//                rotation.setPosition(0.5);
+//            }
 
             armExtend.setPower(-gamepad2.left_stick_y * 0.5);
 
