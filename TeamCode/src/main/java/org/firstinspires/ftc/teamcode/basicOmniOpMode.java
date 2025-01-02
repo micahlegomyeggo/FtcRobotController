@@ -17,10 +17,10 @@ public class basicOmniOpMode extends LinearOpMode {
 
     public void runOpMode() throws InterruptedException {
 
-        DcMotor frontLeft = hardwareMap.dcMotor.get("frontLeft");
-        DcMotor backLeft = hardwareMap.dcMotor.get("backLeft");
-        DcMotor frontRight = hardwareMap.dcMotor.get("frontRight");
-        DcMotor backRight = hardwareMap.dcMotor.get("backRight");
+        DcMotor frontLeft = hardwareMap.dcMotor.get("leftFront");
+        DcMotor backLeft = hardwareMap.dcMotor.get("leftBack");
+        DcMotor frontRight = hardwareMap.dcMotor.get("rightFront");
+        DcMotor backRight = hardwareMap.dcMotor.get("rightBack");
         DcMotor armRotation = hardwareMap.get(DcMotorEx.class, "armRotation");
         DcMotor armExtend = hardwareMap.get(DcMotorEx.class, "armExtend");
         Servo wrist = hardwareMap.get(Servo.class, "wrist");
@@ -102,7 +102,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             if (gamepad2.y){
 
-                armRotation.setTargetPosition(-200);
+                armRotation.setTargetPosition(-340);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
                     armRotation.setPower(0.25);
@@ -121,7 +121,7 @@ public class basicOmniOpMode extends LinearOpMode {
 
             if (gamepad2.x){
 
-                armRotation.setTargetPosition(-600);
+                armRotation.setTargetPosition(-510);
                 armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (armRotation.getTargetPosition() > armRotation.getCurrentPosition()) {
                     armRotation.setPower(0.25);
@@ -150,10 +150,10 @@ public class basicOmniOpMode extends LinearOpMode {
                 wrist.setPosition(1);
             }
             if (gamepad2.dpad_up) {
-                wrist.setPosition(0.75);
+                wrist.setPosition(0.35);
             }
 
-            armExtend.setPower(-gamepad2.left_stick_y);
+            armExtend.setPower(-gamepad2.left_stick_y * 0.5);
 
             if (gamepad1.left_trigger > 0.1) {
                 fishingArm.setPosition(1);
