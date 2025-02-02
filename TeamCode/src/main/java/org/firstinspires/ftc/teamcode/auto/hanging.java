@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 @Disabled
 @Autonomous
-public class hanging extends autonomous {
+public class hanging extends autoL {
 
     //this is preliminary code for a two arm auto
 

@@ -5,7 +5,6 @@ import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.SortOrder;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -19,7 +18,7 @@ import org.opencv.core.RotatedRect;
 import java.util.List;
 @Disabled
 @Autonomous
-public class fishing extends autonomous{
+public class fishing extends autoL {
 
     //this program is preliminary code for a two arm auto
 

@@ -49,6 +49,9 @@
 //        description ="goBILDA® Pinpoint Odometry Computer (IMU Sensor Fusion for 2 Wheel Odometry)"
 //)
 //
+//import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+//
+//@Disabled
 //public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynchSimple> {
 //
 //    private int deviceStatus   = 0;

@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * Displays the first pattern upon init.
  */
 @TeleOp(name="BlinkinExample")
-@Disabled
+//@Disabled
 public class SampleRevBlinkinLedDriver extends OpMode {
 
     /*
@@ -82,8 +82,8 @@ public class SampleRevBlinkinLedDriver extends OpMode {
         displayKind = DisplayKind.AUTO;
 
         blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
-        pattern = RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE;
-        blinkinLedDriver.setPattern(pattern);
+        pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
+        blinkinLedDriver.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
 
         display = telemetry.addData("Display Kind: ", displayKind.toString());
         patternName = telemetry.addData("Pattern: ", pattern.toString());
