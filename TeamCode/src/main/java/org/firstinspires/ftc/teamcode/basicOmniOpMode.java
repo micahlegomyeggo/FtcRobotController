@@ -115,7 +115,7 @@ public class basicOmniOpMode extends LinearOpMode {
                 }
                 if (gamepad2.x) {
                     armRotation.setPower(0.5);
-                    armRotation.setTargetPosition(510);
+                    armRotation.setTargetPosition(505);
                     armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
                 if (gamepad2.right_trigger > 0) {
@@ -138,19 +138,25 @@ public class basicOmniOpMode extends LinearOpMode {
                 if (gamepad2.dpad_left) {
                     rotation.setPosition(1);
                 }
+
                 armExtend.setPower(-gamepad2.left_stick_y * 0.75);
-                if (gamepad2.left_bumper && gamepad2.right_bumper) {
-                    hang.setTargetPosition(1650);
-                    hang.setPower(1);
-                    hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                if (armRotation.getCurrentPosition() < 200 & armExtend.getCurrentPosition() > 1000) {
+                    wrist.setPosition(1);
                 }
+
+//                if (gamepad2.left_bumper && gamepad2.right_bumper) {
+//                    hang.setTargetPosition(100);
+//                    hang.setPower(1);
+//                    hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                }
                 if (gamepad2.right_bumper) {
                     hang.setTargetPosition(6900);
                     hang.setPower(1);
                     hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
                 if (gamepad2.left_bumper) {
-                    hang.setTargetPosition(100);
+                    hang.setTargetPosition(1800);
                     hang.setPower(1);
                     hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }

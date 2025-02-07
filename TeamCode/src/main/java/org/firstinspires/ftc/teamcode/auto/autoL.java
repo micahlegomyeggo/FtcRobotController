@@ -75,14 +75,14 @@ public class autoL extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
                     armExtend.setPower(0.4);
-                    armExtend.setTargetPosition(3);
+                    armExtend.setTargetPosition(30);
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
                 }
 
                 double pos = armExtend.getCurrentPosition();
                 packet.put("liftPos", pos);
-                if (pos > 3) {
+                if (pos > 30) {
                     return true;
                 } else {
                     armExtend.setPower(0);
@@ -131,14 +131,14 @@ public class autoL extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
                     armExtend.setPower(0.6);
-                    armExtend.setTargetPosition(2480);
+                    armExtend.setTargetPosition(2375);
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
                 }
 
                 double pos = armExtend.getCurrentPosition();
                 packet.put("liftPos", pos);
-                if (pos < 2480) {
+                if (pos < 2375) {
                     return true;
                 } else {
                     armExtend.setPower(0);
@@ -242,7 +242,7 @@ public class autoL extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armRotation.setPower(0.25);
+                    armRotation.setPower(0.28);
                     armRotation.setTargetPosition(10);
                     armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
@@ -470,31 +470,40 @@ public class autoL extends LinearOpMode {
         autoL.rotation rotation = new autoL.rotation(hardwareMap);
 
         TrajectoryActionBuilder bucket1 = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(-56, -52), Math.toRadians(45));
+                .strafeToLinearHeading(new Vector2d(-54, -51), Math.toRadians(30));
 
         TrajectoryActionBuilder bucket12 = bucket1.endTrajectory().fresh()
-                .lineToXConstantHeading(-59.5);
+                .lineToXConstantHeading(-62);
 
         TrajectoryActionBuilder bucket13 = bucket12.endTrajectory().fresh()
-                .lineToXConstantHeading(-54);
+                .lineToXConstantHeading(-53);
 
         TrajectoryActionBuilder grab1 = bucket13.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-51.75, -39), Math.toRadians(90));
+                .strafeToLinearHeading(new Vector2d(-47.25, -35.75), Math.toRadians(75));
 
         TrajectoryActionBuilder bucket2 = grab1.endTrajectory().fresh()
                 .setReversed(true)
-                .strafeToLinearHeading(new Vector2d(-53, -51), Math.toRadians(45));
+                .strafeToLinearHeading(new Vector2d(-54, -51), Math.toRadians(30));
+
+        TrajectoryActionBuilder bucket22 = bucket2.endTrajectory().fresh()
+                .setTangent(0)
+                .lineToX(-62);
+//                .lineToXConstantHeading(-62);
+
+        TrajectoryActionBuilder bucket23 = bucket22.endTrajectory().fresh()
+                .lineToXConstantHeading(-53);
 
         TrajectoryActionBuilder grab2 = bucket13.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-59, -41), Math.toRadians(90));
+                .strafeToLinearHeading(new Vector2d(-59, -41), Math.toRadians(80));
 
         TrajectoryActionBuilder bucket3 = grab2.endTrajectory().fresh()
                 .setReversed(true)
-                .strafeToLinearHeading(new Vector2d(-53, -51), Math.toRadians(45));
+                .strafeToLinearHeading(new Vector2d(-60, -51), Math.toRadians(30));
 
         TrajectoryActionBuilder park = bucket13.endTrajectory().fresh()
-                .turn(Math.toRadians(90))
-                .strafeTo(new Vector2d(39, -58));
+                .turn(Math.toRadians(150))
+                .strafeToConstantHeading(new Vector2d(-24, -4))
+                .strafeToConstantHeading(new Vector2d(-16, -4));
 
 //        TrajectoryActionBuilder grab3 = bucket2.fresh()
 //                .setReversed(false)
@@ -515,6 +524,8 @@ public class autoL extends LinearOpMode {
         Action Bucket13 = bucket13.build();
         Action Grab1 = grab1.build();
         Action Bucket2 = bucket2.build();
+        Action Bucket22 = bucket22.build();
+        Action Bucket23 = bucket23.build();
         Action Grab2 = grab2.build();
         Action Bucket3 = bucket3.build();
         Action Park = park.build();
@@ -544,16 +555,18 @@ public class autoL extends LinearOpMode {
                             new SleepAction(1),
                             armExtend.bucket(),
                             Bucket12,
-//                                new SleepAction(0.25),
+                                new SleepAction(0.25),
                             claw.openClaw(),
                             new SleepAction(0.25),
                             new ParallelAction(
                                 Bucket13,
                                 armExtend.normal()
                             ),
+
                             new ParallelAction(
                                 armRotation.grab(),
-                                Grab1),
+                                Grab1
+                ),
                             new SleepAction(0.25),
                             new ParallelAction(
                                 armExtend.grab(),
@@ -571,45 +584,48 @@ public class autoL extends LinearOpMode {
                                 new SequentialAction(
                                     new SleepAction(1),
                                     armExtend.bucket(),
-                                    Bucket12,
+                                    Bucket22,
                                     new SleepAction(0.25),
                                     claw.openClaw(),
                                     new SleepAction(0.25),
                                     new ParallelAction(
-                                        Bucket13,
+                                        Bucket23,
                                         armExtend.normal()
                                     ),
-                                    new ParallelAction(
-                                        armRotation.grab(),
-                                        Grab2),
-                                    new SleepAction(0.25),
-                                    new ParallelAction(
-                                        armExtend.grab(),
-                                        wrist.down()
-                                    ),
-                                    claw.closeClaw(),
-                                    new SleepAction(0.25),
-                                    new ParallelAction(
-                                        wrist.up(),
-                                        armExtend.normal()
-                                    ),
-                                    new ParallelAction(
-                                        armRotation.bucket(),
-                                        Bucket3,
-                                        new SequentialAction(
-                                            new SleepAction(1),
-                                            armExtend.bucket(),
-                                            Bucket12,
-                                            new SleepAction(0.25),
-                                            claw.openClaw(),
-                                            new SleepAction(0.25),
-                                            new ParallelAction(
-                                                Bucket13,
-                                                armExtend.normal()
-                                            ),
-                                            armRotation.normal()
-                                        )
-                                    )
+                                        Park // this point is temporary for now, but could be used in comp
+
+//                                    new ParallelAction(
+//                                        armRotation.grab(),
+//                                        Grab2,
+//                ),
+//                                    new SleepAction(0.25),
+//                                    new ParallelAction(
+//                                        armExtend.grab(),
+//                                        wrist.down()
+//                                    ),
+//                                    claw.closeClaw(),
+//                                    new SleepAction(0.25),
+//                                    new ParallelAction(
+//                                        wrist.up(),
+//                                        armExtend.normal()
+//                                    ),
+//                                    new ParallelAction(
+//                                        armRotation.bucket(),
+//                                        Bucket3,
+//                                        new SequentialAction(
+//                                            new SleepAction(1),
+//                                            armExtend.bucket(),
+//                                            Bucket12,
+//                                            new SleepAction(0.25),
+//                                            claw.openClaw(),
+//                                            new SleepAction(0.25),
+//                                            new ParallelAction(
+//                                                Bucket13
+//                                                armExtend.normal()
+//                                            ),
+//                                            armRotation.normal()
+//                                        )
+//                                    )
                                 )
                             )
                         )
