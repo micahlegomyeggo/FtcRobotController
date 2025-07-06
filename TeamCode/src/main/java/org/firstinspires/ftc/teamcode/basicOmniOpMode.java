@@ -15,10 +15,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @TeleOp
 public class basicOmniOpMode extends LinearOpMode {
 
-    public int count = 0;
-
-    int bPos = 110;
-
     public void runOpMode() throws InterruptedException {
 
         DcMotor frontLeft = hardwareMap.dcMotor.get("leftFront");
@@ -45,79 +41,142 @@ public class basicOmniOpMode extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
-        armRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armExtend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         armExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armExtend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        hang.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         boolean hangY = true;
         boolean driveMode = true;
         boolean manualFishMode = false;
         boolean found = false;
 
+        double wrist2Pos = 0.25;
+
+        double rPower;
+        double rPos;
+        double rLastError = 0;
+        double rError;
+        double rTarget = 0; //505
+
+        double p = 0.00675; // 0.005
+        double i = 0.00013; // 0.000125
+        double d = 0.0125; // 0.011
+
+        double integral = 0;
+
+        double derivative;
+
         while (opModeIsActive() && !isStopRequested()) {
+            rotation.setPosition(1);
+            wrist3.setPosition(0.99);
 
             double y = -gamepad1.left_stick_y;
-            double x = gamepad1.left_stick_x * 0.85;
-            double rx = gamepad1.right_stick_x * 0.85;
+            double x = gamepad1.left_stick_x; // *0.85
+            double rx = gamepad1.right_stick_x; // *0.85
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
             double backRightPower = (y + x - rx) / denominator;
 
-            if (gamepad1.a && driveMode) {
-                driveMode = false;
-                sleep(250);
-            }
-            if (gamepad1.a && !driveMode) {
-                driveMode = true;
-                sleep(250);
-            }
+//            if (gamepad1.a && driveMode) {
+//                driveMode = false;
+//                sleep(250);
+//            }
+//            if (gamepad1.a && !driveMode) {
+//                driveMode = true;
+//                sleep(250);
+//            }
             if (driveMode) {
                 frontLeft.setPower(frontLeftPower);// * 0.75);  // change back to 75 later for ben
                 backLeft.setPower(backLeftPower);// * 0.75);
                 frontRight.setPower(frontRightPower);// * 0.75);
                 backRight.setPower(backRightPower);// * 0.75);
             }
-            if (!driveMode) {
-                frontLeft.setPower(frontLeftPower * 0.35); // slow mode
-                backLeft.setPower(backLeftPower * 0.35);
-                frontRight.setPower(frontRightPower * 0.35);
-                backRight.setPower(backRightPower * 0.35);
+//            if (!driveMode) {
+//                frontLeft.setPower(frontLeftPower * 0.35); // slow mode
+//                backLeft.setPower(backLeftPower * 0.35);
+//                frontRight.setPower(frontRightPower * 0.35);
+//                backRight.setPower(backRightPower * 0.35);
+//            }
+
+            if (gamepad2.right_bumper) {
+                hang.setTargetPosition(6900);
+                hang.setPower(1);
+                hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            if (gamepad2.left_bumper) {
+                hang.setTargetPosition(1300); //1800 100% works
+                hang.setPower(1);
+                hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
             if (!manualFishMode) {
                 if (gamepad2.a) {
-                    armRotation.setPower(0.4);
+//                    i = 0.000125;
+//                    d = 0.015;
+                    rTarget = 10;
+                    /*armRotation.setPower(0.4);
                     armRotation.setTargetPosition(10);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
                 }
                 if (gamepad2.b) {
-                    armRotation.setPower(0.4);
-                    armRotation.setTargetPosition(bPos);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                    i = 0.000125;
+//                    d = 0.015;
+                    rTarget = 118; //115
+                    /*armRotation.setPower(0.4);
+                    armRotation.setTargetPosition(101);
+                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
                 }
                 if (gamepad2.y && hangY) {
-                    armRotation.setPower(0.4);
+//                    i = 0.000125;
+//                    d = 0.015;
+                    rTarget = 380;
+                    /*armRotation.setPower(0.4);
                     armRotation.setTargetPosition(380);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
                     hangY = false;
                     sleep(250);
                 }
                 if (gamepad2.y && !hangY) {
-                    armRotation.setPower(0.4);
+//                    i = 0.000125;
+//                    d = 0.015;
+                    rTarget = 280;
+                    /*armRotation.setPower(0.4);
                     armRotation.setTargetPosition(280);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
                     hangY = true;
                     sleep(250);
                 }
                 if (gamepad2.x) {
-                    armRotation.setPower(0.5);
+//                    i = 0.003; //0.001
+//                    d = 0.015; //0.011
+                    rTarget = 530; //524
+                    /*armRotation.setPower(0.5);
                     armRotation.setTargetPosition(505);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
                 }
+
+                rPos = armRotation.getCurrentPosition();
+                rError = rTarget - rPos;
+                integral += rError;
+                derivative = rError - rLastError;
+                rPower = (p * rError) + (i * integral) + (d * derivative);
+                if (rPower > 1) {rPower=1;}
+                if (rPower < -1) {rPower=-1;}
+                armRotation.setPower(rPower);
+                rLastError = rError;
+
+                telemetry.addData("Power:", rPower);
+                telemetry.addData("Pos:", rPos);
+                telemetry.addData("Error:", rError);
+                telemetry.addData("Integral:", integral);
+                telemetry.addData("Derivative:", derivative);
+
                 if (gamepad2.right_trigger > 0) {
                     claw.setPosition(1);
                 }
@@ -132,38 +191,23 @@ public class basicOmniOpMode extends LinearOpMode {
                     wrist.setPosition(0.75);
                 }
 
-                if (gamepad2.dpad_right) {
-                    rotation.setPosition(0);
-                }
-                if (gamepad2.dpad_left) {
-                    rotation.setPosition(1);
-                }
+//                if (gamepad2.dpad_right) {
+//                    rotation.setPosition(0);
+//                }
+//                if (gamepad2.dpad_right) {
+//                    rotation.setPosition(1);
+//                }
 
-                armExtend.setPower(-gamepad2.left_stick_y * 0.75);
+                armExtend.setPower(-gamepad2.left_stick_y * 0.9);
 
                 if (armRotation.getCurrentPosition() < 200 & armExtend.getCurrentPosition() > 1000) {
                     wrist.setPosition(1);
                 }
 
-//                if (gamepad2.left_bumper && gamepad2.right_bumper) {
-//                    hang.setTargetPosition(100);
-//                    hang.setPower(1);
-//                    hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                }
-                if (gamepad2.right_bumper) {
-                    hang.setTargetPosition(6900);
-                    hang.setPower(1);
-                    hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                }
-                if (gamepad2.left_bumper) {
-                    hang.setTargetPosition(1800);
-                    hang.setPower(1);
-                    hang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                }
                 if (gamepad2.right_stick_y > 0.3) {
-                    fishingArm.setPosition(0.65);
+                    fishingArm.setPosition(0.85); //0.65
                 }else if (gamepad2.right_stick_y < -0.3) {
-                    fishingArm.setPosition(0.35);
+                    fishingArm.setPosition(0.15); //0.35
                 } else {
                     fishingArm.setPosition(0.5);
                 }
@@ -181,17 +225,31 @@ public class basicOmniOpMode extends LinearOpMode {
                     wrist1.setPosition(0.03);
                 }
                 if (gamepad2.dpad_right) {
-                    wrist2.setPosition(1); // wrist2
+                    wrist2Pos += 0.1; // wrist2
+                    sleep(100);
                 }
                 if (gamepad2.dpad_left) {
-                    wrist2.setPosition(0.2);
+                    wrist2Pos -= 0.1;
+                    sleep(100);
                 }
-                if (gamepad2.b) {
-                    wrist3.setPosition(0.99);
+                if (wrist2Pos >= 1) {
+                    wrist2Pos = 1;
                 }
-                if (gamepad2.a) {
-                    wrist3.setPosition(0.25);
+                if (wrist2Pos <= 0) {
+                    wrist2Pos = 0;
                 }
+                if (gamepad2.x) {
+                    wrist2Pos = 0.25;
+//                    wrist1.setPosition(0.85);
+                }
+                wrist2.setPosition(wrist2Pos);
+
+//                if (gamepad2.b) {
+//                    wrist3.setPosition(0.99);
+//                }
+//                if (gamepad2.a) {
+//                    wrist3.setPosition(0.25);
+//                }
                 if (gamepad2.left_trigger > 0.1) {
                     fishingClaw.setPosition(0.5);
                 }
@@ -199,13 +257,15 @@ public class basicOmniOpMode extends LinearOpMode {
                     fishingClaw.setPosition(1);
                 }
                 if (gamepad2.left_stick_y > 0.3) {
-                    fishingArm.setPosition(0.65);
+                    fishingArm.setPosition(0.95); //0.65
                 }else if (gamepad2.left_stick_y < -0.3) {
-                    fishingArm.setPosition(0.35);
+                    fishingArm.setPosition(0.05); //0.35
                 } else {
                     fishingArm.setPosition(0.5);
                 }
                 if (gamepad2.back) {
+//                    wrist1.setPosition(0.03);
+//                    fishingClaw.setPosition(1);
                     manualFishMode = false;
                     sleep(250);
                 }
@@ -215,6 +275,7 @@ public class basicOmniOpMode extends LinearOpMode {
             telemetry.addData("Arm angle", armRotation.getCurrentPosition());
             telemetry.addData("Arm Extension", -armExtend.getCurrentPosition());
             telemetry.addData("Wrist Angle", wrist.getPosition());
+            telemetry.addData("Wrist3", wrist3.getPosition());
             NormalizedRGBA colors = colorSensor.getNormalizedColors();
             telemetry.addLine()
                     .addData("Red", "%.3f", colors.red)
@@ -227,6 +288,7 @@ public class basicOmniOpMode extends LinearOpMode {
             if (colors.blue > colors.red && colors.blue > colors.green) {
                 telemetry.addLine("Blue Found");
             }
+
             telemetry.update();
         }
         hang.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

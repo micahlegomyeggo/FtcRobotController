@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
@@ -12,9 +12,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.TangentPath;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
-import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -26,8 +24,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 import java.util.Arrays;
 
@@ -48,8 +44,8 @@ public class autoR extends LinearOpMode {
 
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armExtend.setPower(0.6);
-                    armExtend.setTargetPosition(1080);
+                    armExtend.setPower(1);
+                    armExtend.setTargetPosition(1080); //1080
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
                 }
@@ -77,15 +73,15 @@ public class autoR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armExtend.setPower(0.6);
-                    armExtend.setTargetPosition(-3);
+                    armExtend.setPower(1);
+                    armExtend.setTargetPosition(-12);
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
                 }
 
                 double pos = armExtend.getCurrentPosition();
                 packet.put("liftPos", pos);
-                if (pos > -3) {
+                if (pos > -12) {
                     return true;
                 } else {
                     armExtend.setPower(0);
@@ -105,7 +101,7 @@ public class autoR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armExtend.setPower(0.6);
+                    armExtend.setPower(1);
                     armExtend.setTargetPosition(920);
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
@@ -133,7 +129,7 @@ public class autoR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armExtend.setPower(0.6);
+                    armExtend.setPower(1);
                     armExtend.setTargetPosition(2450);
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
@@ -161,7 +157,7 @@ public class autoR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armExtend.setPower(0.6);
+                    armExtend.setPower(1);
                     armExtend.setTargetPosition(1000);
                     armExtend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     initialized = true;
@@ -187,6 +183,7 @@ public class autoR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 armExtend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                armExtend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 return false;
             }
         }
@@ -199,6 +196,21 @@ public class autoR extends LinearOpMode {
 
     public class armRotation {
 
+        double rPower;
+        double rPos;
+        double rLastError = 0;
+        double rError;
+        double rTarget = 0;
+
+        double p = 0.006; //0.0025
+        double i = 0.0002; //0.00025
+        double d = 0.012; //0.03
+        double integral = 0;
+        double derivative;
+
+        public boolean finish = false;
+        public boolean rotateCorrect;
+
         private DcMotorEx armRotation;
 
         public armRotation(HardwareMap hardwareMap) {
@@ -206,33 +218,46 @@ public class autoR extends LinearOpMode {
             armRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
+        public class Angle implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                int pos = armRotation.getCurrentPosition();
+                packet.put("armRotationPos", pos);
+                rPos = armRotation.getCurrentPosition();
+                rError = rTarget - rPos;
+                integral += rError;
+                derivative = rError - rLastError;
+                rPower = p * rError + i * integral + d * derivative;
+                if (rPower > 1) {rPower=1;}
+                if (rPower < -1) {rPower=-1;}
+                armRotation.setPower(rPower);
+                rLastError = rError;
+                rotateCorrect = rPos < rTarget + 3 && rPos > rTarget - 1;
+                telemetry.addData("Power:", rPower);
+                telemetry.addData("Pos:", rPos);
+                telemetry.addData("Error:", rError);
+                telemetry.addData("Integral:", integral);
+                telemetry.addData("Derivative:", derivative);
+                telemetry.addData("Correct", rotateCorrect);
+                telemetry.update();
+                return !finish;
+            }
+        }
+
+        public Action angle() {return new autoR.armRotation.Angle();}
+
         public class Hang implements Action {
-
             private boolean initialized = false;
-
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armRotation.setPower(0.5);
-                    armRotation.setTargetPosition(385);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
+                    rTarget = 385;
                     initialized = true;
                 }
-
                 int pos = armRotation.getCurrentPosition();
                 packet.put("armRotationPos", pos);
-                if (pos < 385) {
-                    telemetry.addData("Pos, ", pos);
-                    telemetry.update();
-                    return true;
-                } else {
-                    armRotation.setPower(-0.22);
-                    return false;
-                }
-
+                return !rotateCorrect;
             }
-
         }
 
         public Action hang() {
@@ -241,24 +266,15 @@ public class autoR extends LinearOpMode {
 
         public class Normal implements Action {
             private boolean initialized = false;
-
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armRotation.setPower(0.25);
-                    armRotation.setTargetPosition(10);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rTarget = 10;
                     initialized = true;
                 }
-
                 int pos = armRotation.getCurrentPosition();
                 packet.put("liftPos", pos);
-                if (pos > 10.0) {
-                    return true;
-                } else {
-                    armRotation.setPower(0);
-                    return false;
-                }
+                return !rotateCorrect;
             }
         }
 
@@ -268,24 +284,15 @@ public class autoR extends LinearOpMode {
 
         public class Hang2 implements Action {
             private boolean initialized = false;
-
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armRotation.setPower(0.6);
-                    armRotation.setTargetPosition(300);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rTarget = 325;
                     initialized = true;
                 }
-
                 int pos = armRotation.getCurrentPosition();
                 packet.put("liftPos", pos);
-                if (pos > 300.0) {
-                    return true;
-                } else {
-                    armRotation.setPower(0);
-                    return false;
-                }
+                return !rotateCorrect;
             }
         }
 
@@ -295,25 +302,15 @@ public class autoR extends LinearOpMode {
 
         public class Human implements Action {
             private boolean initialized = false;
-
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!initialized) {
-                    armRotation.setPower(0.6);
-                    armRotation.setTargetPosition(100);
-                    armRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rTarget = 105; //103
                     initialized = true;
                 }
-
                 int pos = armRotation.getCurrentPosition();
                 packet.put("liftPos", pos);
-                if (pos < 100) {
-                    return false;
-                } else {
-                    armRotation.setPower(0);
-                    return true;
-                }
-
+                return !rotateCorrect;
             }
         }
 
@@ -325,6 +322,7 @@ public class autoR extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 armRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                armRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 return false;
             }
         }
@@ -332,6 +330,17 @@ public class autoR extends LinearOpMode {
         public Action reset() {
             return new Reset();
         }
+
+        public class Finish implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                finish = true;
+                return false;
+            }
+        }
+
+        public Action finish(){return new autoR.armRotation.Finish();}
+
     }
 
     public class Claw {
@@ -344,7 +353,7 @@ public class autoR extends LinearOpMode {
         public class CloseClaw implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                claw.setPosition(0.95);
+                claw.setPosition(0.9375);
                 return false;
             }
         }
@@ -416,7 +425,7 @@ public class autoR extends LinearOpMode {
         public class in implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                rotation.setPosition(0);
+                rotation.setPosition(1);
                 return false;
             }
         }
@@ -443,50 +452,39 @@ public class autoR extends LinearOpMode {
 
         TrajectoryActionBuilder hang11 = drive.actionBuilder(initialPose)
                 .setTangent(90)
-                .strafeToLinearHeading(new Vector2d(6, -34.2), Math.toRadians(80));
+                .strafeToLinearHeading(new Vector2d(6, -39), Math.toRadians(90)); // 6, -37.65
 
         TrajectoryActionBuilder hang12 = hang11.endTrajectory().fresh()
-                .strafeToConstantHeading(new Vector2d(6, -39));
+                .strafeToConstantHeading(new Vector2d(6, -41.75));
 
         TrajectoryActionBuilder grab1 = hang12.endTrajectory().fresh()
                 .strafeToConstantHeading(new Vector2d(39, -42))
                 .setTangent(90)
-//                .strafeToSplineHeading(new Vector2d(34, -10), Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(39, -14), Math.toRadians(90)) //270
                 .splineToConstantHeading(new Vector2d(49, -14), Math.toRadians(90)) // 270
                 .turnTo(Math.toRadians(270))
-//                .splineToConstantHeading(new Vector2d(49, -58.5), Math.toRadians(270),
-//                        new TranslationalVelConstraint(45), new ProfileAccelConstraint(-15, 45))
-//                .setTangent(90)
-//                .splineToConstantHeading(new Vector2d(55, -10), Math.toRadians(270))
-//                .splineToConstantHeading(new Vector2d(61, -10), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(50, -61.75), Math.toRadians(270));
-//                        new TranslationalVelConstraint(40), new ProfileAccelConstraint(-10, 40));
+                .splineToConstantHeading(new Vector2d(49, -61.25), Math.toRadians(270)); // 50 -62
 
         TrajectoryActionBuilder hang21 = grab1.endTrajectory().fresh()
                 .setTangent(270)
-//                .setReversed(true)
-                .strafeToSplineHeading(new Vector2d(3, -39.2), Math.toRadians(88));
+                .strafeToSplineHeading(new Vector2d(3, -45.75), Math.toRadians(95)); // 3 -43.4 95
 
         TrajectoryActionBuilder hang22 = hang21.endTrajectory().fresh()
-//                .setReversed(false)
-                .strafeTo(new Vector2d(3, -44));
+                .strafeTo(new Vector2d(3, -48.5)); // 3 -44
 
         TrajectoryActionBuilder grab2 = hang22.endTrajectory().fresh()
                 .setTangent(90)
                 .setReversed(true)
                 .strafeTo(new Vector2d(5, -48))
-                .strafeToSplineHeading(new Vector2d(47, -58), Math.toRadians(262))
-                .strafeTo(new Vector2d(47, -66.85));
+                .strafeToSplineHeading(new Vector2d(46.5, -54), Math.toRadians(270)) // 47 -58 262
+                .strafeTo(new Vector2d(46.5, -60.5)); //47 -67
 
         TrajectoryActionBuilder hang31 = grab2.endTrajectory().fresh()
                 .setTangent(270)
-//                .setReversed(true)
-                .strafeToSplineHeading(new Vector2d(0, -36), Math.toRadians(75));
+                .strafeToSplineHeading(new Vector2d(0, -46), Math.toRadians(97.5)); // 0 -43.35 95
 
         TrajectoryActionBuilder hang32 = hang31.endTrajectory().fresh()
-//                .setReversed(false)
-                .strafeToConstantHeading(new Vector2d(0, -41));
+                .strafeToConstantHeading(new Vector2d(0, -49)); // 0 -41
 
 //        TrajectoryActionBuilder grab3 = hang32.endTrajectory().fresh()
 //                .setTangent(90)
@@ -499,10 +497,11 @@ public class autoR extends LinearOpMode {
 //        TrajectoryActionBuilder hang42 = hang41.endTrajectory().fresh()
 //                .strafeTo(new Vector2d(-1, -40.5));
 
-
-
         TrajectoryActionBuilder park = hang32.endTrajectory().fresh()
-                .strafeToConstantHeading(new Vector2d(48, -63),
+//                .splineToConstantHeading(new Vector2d(39, -35), 90)
+//                .strafeToConstantHeading(new Vector2d(66, 3),
+//                    new TranslationalVelConstraint(100), new ProfileAccelConstraint(-100, 100))
+                .strafeToConstantHeading(new Vector2d(66, -63),
                     new TranslationalVelConstraint(100), new ProfileAccelConstraint(-100, 100));
 
         waitForStart();
@@ -528,12 +527,13 @@ public class autoR extends LinearOpMode {
         //Blue + Red right auto
         Actions.runBlocking(
                 new ParallelAction(
+                        armRotation.reset(),
+                        armExtend.reset(),
+                        armRotation.angle(),
                         new SequentialAction(
                                 new ParallelAction(
                                         claw.closeClaw(),
                                         rotation.in(),
-                                        armExtend.reset(),
-                                        armRotation.reset(),
                                         wrist.up(),
                                         Hang11,
                                         armRotation.hang()
@@ -545,6 +545,7 @@ public class autoR extends LinearOpMode {
                                                 wrist.down())),
                                 new ParallelAction(
                                         armRotation.hang2(),
+                                        new SleepAction(0.1),
                                         Hang12,
                                         new SequentialAction(
                                                 new SleepAction(0.25),
@@ -569,10 +570,11 @@ public class autoR extends LinearOpMode {
                                         new SequentialAction(
                                                 new SleepAction(1.25),
                                                 armExtend.hang(),
-                                                new SleepAction(0.75),
+                                                new SleepAction(0.4),
                                                 wrist.down())),
                                 new ParallelAction(
                                         armRotation.hang2(),
+                                        new SleepAction(0.1),
                                         Hang22,
                                         new SequentialAction(
                                                 new SleepAction(0.25),
@@ -595,7 +597,7 @@ public class autoR extends LinearOpMode {
                                 new ParallelAction(
                                         armExtend.hang(),
                                         new SequentialAction(
-                                                new SleepAction(1),
+                                                new SleepAction(0.8),
                                                 wrist.down())),
                                 new ParallelAction(
                                         armRotation.hang2(),
@@ -609,9 +611,11 @@ public class autoR extends LinearOpMode {
                                         new ParallelAction(
                                                 armExtend.normal(),
                                                 new SleepAction(1.5)),
+                                        new ParallelAction(
                                         armRotation.normal(),
-                                        Park
-                                )
+                                        Park)
+                                ),
+                                armRotation.finish()
                         )
                 )
         );
